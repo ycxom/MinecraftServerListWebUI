@@ -9,21 +9,29 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- 链接到外部CSS文件 -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
     <div class="hero-header">
-        <h1>MC服务器状态面板</h1>
-        <p>Mc服务器 By @YCXOM</p>
+        <h1 id="main-title"></h1>
+        <p id="subtitle"></p>
     </div>
     <div class="controls">
-        <label for="group-selector">选择服务器组:</label>
-        <select id="group-selector"></select>
-        <!-- 新增刷新按钮 -->
+        <label for="group-selector-btn">选择服务器组:</label>
+        <div class="drop-down" id="group-selector-container">
+            <button class="drop-down__btn" id="group-selector-btn" aria-expanded="false" aria-haspopup="true"
+                type="button">
+                <span>全部服务器</span>
+            </button>
+            <div class="drop-down__items" data-items="">
+                <div class="drop-down__items-inner">
+                </div>
+            </div>
+        </div>
         <button id="refresh-btn" class="refresh-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M23 4v6h-6"></path>
                 <path d="M1 20v-6h6"></path>
                 <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
@@ -37,9 +45,9 @@
     </div>
     <div id="groups-container"></div>
     <div class="countdown" id="countdown"></div>
+    <footer id="page-footer" class="page-footer"></footer>
 
-    <!-- 链接到外部JS文件 -->
-    <script type="module" src="script.js"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 
 </html>

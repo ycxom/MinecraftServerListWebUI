@@ -1,0 +1,121 @@
+.hero-header {
+    position: relative;
+    z-index: 1;
+    padding: 60px 20px;
+    text-align: center;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.25);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark-theme .hero-header {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.hero-header h1 {
+    font-weight: 700;
+    font-size: 2.5em;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-header p {
+    margin-top: 8px;
+    font-size: 1.1em;
+    opacity: 0.9;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.controls {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.controls label {
+    margin-right: 0;
+    font-weight: 600;
+    color: var(--text-color);
+    text-shadow: 0 1px 2px rgba(255,255,255,0.7);
+}
+
+.dark-theme .controls label {
+    text-shadow: none;
+}
+
+/* --- Server Group Container --- */
+.server-group {
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.3);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    margin-bottom: 25px;
+    padding: 20px;
+    z-index: 1;
+}
+.dark-theme .server-group {
+    background-color: rgba(30, 30, 30, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.server-group-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-color);
+    border-bottom: 1px solid rgba(222, 226, 230, 0.5);
+    padding-bottom: 15px;
+    margin-bottom: 20px; /* Space between header and node list */
+}
+
+.dark-theme .server-group-header {
+    border-bottom-color: var(--border-color);
+}
+
+.server-group-header h2 {
+    margin: 0;
+    padding: 0;
+    font-size: 1.75em;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.dark-theme .server-group-header h2 {
+     text-shadow: none;
+}
+
+.nodes-container {
+    position: relative;
+    z-index: 1;
+    perspective: 800px;
+}
+
+.page-footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    font-size: 0.9em;
+    color: var(--subtle-text-color);
+    background-color: rgba(0, 0, 0, 0.2);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .page-footer {
+    background-color: rgba(0, 0, 0, 0.4);
+}
