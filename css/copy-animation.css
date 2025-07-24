@@ -2,23 +2,24 @@
 .copy-btn {
     position: relative;
     width: 80px;
-    /* Adjusted width for text */
     height: 38px;
     border-radius: 12px;
-    /* Softened border-radius */
     cursor: pointer;
     outline: 0;
 
-    /* Applying the new frosted glass effect from the user's example */
+    /*
+     REMOVED: The frosted glass effect is now handled by the .interactive-glass class
+     and the InteractiveGlass.js script for consistency. The conflicting backdrop-filter
+     and related properties have been removed. The button's glass appearance will be
+     inherited from the main glass effect applied to parent elements or can be
+     applied directly by adding the 'interactive-glass' class to the button if needed.
+    */
     background: rgba(255, 255, 255, .08);
     border: 2px solid transparent;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, .4), 0 16px 32px rgba(0, 0, 0, .12);
-    backdrop-filter: url(#frosted);
-    -webkit-backdrop-filter: url(#frosted);
 
     transition: all 0.2s ease;
 
-    /* Center the text content */
     display: grid;
     place-items: center;
 }
@@ -40,7 +41,6 @@
     box-shadow: 0 0 0 2px rgba(255, 255, 255, .1), 0 16px 32px rgba(0, 0, 0, .25);
 }
 
-/* The text element inside the glass button */
 .copy-btn__text {
     font-size: 0.9em;
     font-weight: 600;
@@ -51,12 +51,9 @@
 
 .copy-btn.is-copied .copy-btn__text {
     color: #fff;
-    /* White text when copied */
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-
-/* Hide the old SVG checkmark animation container */
 .copy-btn__svg {
     display: none;
 }

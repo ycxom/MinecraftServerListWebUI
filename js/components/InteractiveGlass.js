@@ -1,7 +1,7 @@
 /**
  * InteractiveGlass.js
  * * This is a heavily refactored version of the original liquid-glass.js by Shu Ding.
- * It has been adapted from a standalone draggable element into a reusable class 
+ * It has been adapted from a standalone draggable element into a reusable class
  * that can be applied to multiple existing DOM elements to create an interactive,
  * VisionOS-style liquid glass effect.
  * * Key changes:
@@ -12,6 +12,8 @@
  * - Mouse interactions are relative to the target element.
  * - Includes a `destroy` method for cleanup to prevent memory leaks during UI updates.
  * - FIX: Ensured all canvas and ImageData dimensions are rounded to integers to prevent crashes.
+ * - REFACTOR: Removed all hardcoded styles (background, border, etc.) to prevent conflicts
+ * with external CSS files. This script is now solely responsible for the filter effect.
  */
 
 function smoothStep(a, b, t) {
@@ -53,8 +55,6 @@ export class InteractiveGlass {
 
     init() {
         const rect = this.element.getBoundingClientRect();
-        // --- BUG FIX ---
-        // Round dimensions to the nearest whole number to ensure integer values for canvas operations.
         this.width = Math.round(rect.width);
         this.height = Math.round(rect.height);
 
@@ -63,13 +63,14 @@ export class InteractiveGlass {
         this.createSVGFilter();
         this.createCanvas();
 
+        // Apply ONLY the backdrop-filter, leaving other styles to CSS.
         this.element.style.backdropFilter = `url(#${this.id}_filter) blur(0.25px)`;
         this.element.style.webkitBackdropFilter = `url(#${this.id}_filter) blur(0.25px)`;
 
         this.element.addEventListener('mousemove', this.onMouseMove);
         this.element.addEventListener('mouseleave', this.onMouseLeave);
 
-        this.update(); // Initial render
+        this.update();
     }
 
     createSVGFilter() {
@@ -94,7 +95,7 @@ export class InteractiveGlass {
 
         this.feDisplacementMap = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
         this.feDisplacementMap.setAttribute('in', 'SourceGraphic');
-        this.feDisplacementMap.setAttribute('in2', 'SourceGraphic'); // Initial placeholder
+        this.feDisplacementMap.setAttribute('in2', 'SourceGraphic');
         this.feDisplacementMap.setAttribute('xChannelSelector', 'R');
         this.feDisplacementMap.setAttribute('yChannelSelector', 'G');
 
@@ -137,7 +138,6 @@ export class InteractiveGlass {
         let mx = mouse.x - 0.5;
         let my = mouse.y - 0.5;
 
-        // Animate mouse position back to center on leave
         if (!mouse.isOver) {
             mx *= 0.9;
             my *= 0.9;
@@ -158,7 +158,6 @@ export class InteractiveGlass {
     update() {
         if (!this.context) return;
 
-        // Use the rounded integer dimensions for all calculations.
         const w = this.width;
         const h = this.height;
 
@@ -176,7 +175,7 @@ export class InteractiveGlass {
             }
         }
 
-        maxScale = Math.max(maxScale, 1.0); // Prevent division by zero
+        maxScale = Math.max(maxScale, 1.0);
 
         let dataIndex = 0;
         let rawIndex = 0;
@@ -196,7 +195,6 @@ export class InteractiveGlass {
         this.feDisplacementMap.setAttribute('scale', maxScale.toString());
 
         this.animationFrame = null;
-        // Keep updating if mouse is leaving
         if (this.mouse.isOver === false && (Math.abs(this.mouse.x - 0.5) > 0.01 || Math.abs(this.mouse.y - 0.5) > 0.01)) {
             this.mouse.x = (this.mouse.x - 0.5) * 0.95 + 0.5;
             this.mouse.y = (this.mouse.y - 0.5) * 0.95 + 0.5;
@@ -207,6 +205,7 @@ export class InteractiveGlass {
     destroy() {
         this.element.removeEventListener('mousemove', this.onMouseMove);
         this.element.removeEventListener('mouseleave', this.onMouseLeave);
+        // Only remove the styles this script added.
         this.element.style.backdropFilter = '';
         this.element.style.webkitBackdropFilter = '';
         if (this.svg) {

@@ -4,8 +4,6 @@ import { testAllServers } from './api.js';
 import { detectAndApplyTheme, copyAddress, loadBackgroundImage } from './utils.js';
 import { getState, setState, initState } from './state.js';
 
-// No longer importing liquid-glass.js
-
 async function main() {
     showLoadingAnimation();
     const serverData = await loadAndProcessConfig();
@@ -20,11 +18,11 @@ async function main() {
 // --- Global Event Listeners ---
 document.addEventListener('click', function (event) {
     const target = event.target;
-    const { groupSelectorDropdown, isTransitioning } = getState();
+    const { isTransitioning } = getState();
 
-    if (groupSelectorDropdown && !groupSelectorDropdown.el.contains(target)) {
-        groupSelectorDropdown.toggle(true);
-    }
+    // *** THE FIX ***
+    // The conflicting logic for handling dropdown item clicks has been completely removed.
+    // The DropdownMenu component now handles this safely on its own.
 
     const copyButton = target.closest('.copy-btn');
     if (copyButton) {
@@ -60,11 +58,6 @@ document.addEventListener('click', function (event) {
             }
         }
         return;
-    }
-
-    const selectorItem = target.closest('.drop-down__item');
-    if (groupSelectorDropdown && groupSelectorDropdown.itemList.contains(selectorItem)) {
-        groupSelectorDropdown.handleItemClick(selectorItem);
     }
 });
 

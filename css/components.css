@@ -1,11 +1,11 @@
-/* --- Dropdown Component Styles (Now powered by .interactive-glass) --- */
+/* --- Dropdown Component Styles --- */
 .drop-down {
-    /* Most styles are now handled by .interactive-glass in layout.css */
-    padding: 0; /* Let the button inside handle padding */
+    /* This is now just a container for positioning */
+    position: relative;
 }
 
 .drop-down__btn {
-    background: transparent;
+    background: transparent; /* Background is now handled by .interactive-glass */
     border: none;
     color: var(--text-color);
     cursor: pointer;
@@ -14,25 +14,14 @@
     padding: 10px 16px;
     text-align: left;
     width: 100%;
-    
-    /* --- INTERACTIVITY FIX --- */
-    /*
-      When the parent .drop-down has the glass effect, it creates a new stacking context.
-      We must give the button a relative position and a higher z-index to ensure it
-      sits on top of the parent's context and can receive click events.
-    */
-    position: relative;
-    z-index: 2;
+    /* REMOVED: z-index hack is no longer necessary */
 }
 .drop-down__btn:focus { outline: none; }
 
 .drop-down__items {
-    background-color: var(--drop-bg-items, rgba(255, 255, 255, 0.8));
-    border: 1px solid var(--drop-border-color, rgba(255, 255, 255, 0.2));
+    /* REMOVED: Conflicting backdrop-filter and background styles. */
+    /* This will now get its appearance from the .interactive-glass class. */
     border-radius: 12px;
-    box-shadow: var(--drop-shadow, 0 4px 12px rgba(0, 0, 0, 0.1));
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     height: 0;
     opacity: 0;
     overflow: hidden;
@@ -42,10 +31,10 @@
     width: 100%;
     z-index: 100;
     visibility: hidden;
-    transition: all 0.4s ease;
+    transition: opacity 0.4s ease, visibility 0.4s ease; /* Adjusted transition */
 }
 .drop-down[aria-expanded="true"] .drop-down__items {
-    height: auto;
+    height: auto; /* Let content determine height */
     opacity: 1;
     visibility: visible;
 }
@@ -74,7 +63,7 @@
 
 /* --- Node Drawer Component Styles --- */
 .node-drawer {
-    background-color: rgba(255, 255, 255, 0.1); 
+    background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     margin-bottom: 12px;
@@ -150,22 +139,20 @@
 /* --- Header Info Component --- */
 .header-info-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .header-info-item {
-    display: flex; 
-    align-items: center; 
-    font-size: 0.9em; 
-    font-weight: 600; 
+    display: flex;
+    align-items: center;
+    font-size: 0.9em;
+    font-weight: 600;
     padding: 8px 14px;
-    /* REMOVED background, border, and border-radius to unify with .interactive-glass */
 }
 .header-info-item svg { margin-right: 6px; width: 14px; height: 14px; }
 
-/* REMOVED background-color, kept color for visual cues */
 .header-info-item.status.online { color: var(--green); }
 .header-info-item.status.offline { color: var(--red); }
 .header-info-item.status.testing { color: var(--orange); }
 .header-info-item.players { color: var(--purple); }
 
-/* --- Refresh Button (Now powered by .interactive-glass) --- */
+/* --- Refresh Button --- */
 .refresh-button {
     padding: 10px 16px;
     cursor: pointer;
@@ -174,11 +161,9 @@
     gap: 6px;
     font-size: 1em;
     color: var(--text-color);
-    background: transparent; /* Remove its own background */
-    border: none; /* Remove its own border */
-    box-shadow: none; /* Remove its own shadow */
-    position: relative; /* Add position for z-index context */
-    z-index: 2;
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 /* --- Progress Bar and Countdown --- */
