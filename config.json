@@ -16,7 +16,7 @@
                     "port-pe": 25566
                 },
                 {
-                    "name": "阿里云云节点",
+                    "name": "阿里云节点",
                     "type": "java",
                     "address": "aly.ycxom.com",
                     "port-java": 25566,
@@ -49,7 +49,7 @@
                     "port-pe": 19132
                 },
                 {
-                    "name": "阿里云云节点",
+                    "name": "阿里云节点",
                     "type": "java",
                     "address": "aly.ycxom.com",
                     "port-java": 25565,

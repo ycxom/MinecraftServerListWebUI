@@ -6,12 +6,14 @@ export function getLatencyClass(latency) {
 }
 
 export function copyAddress(address, element) {
+    if (element.classList.contains('is-copied')) {
+        return;
+    }
+
     navigator.clipboard.writeText(address).then(() => {
-        element.textContent = '已复制!';
-        element.classList.add('copied');
+        element.classList.add('is-copied');
         setTimeout(() => {
-            element.textContent = '复制';
-            element.classList.remove('copied');
+            element.classList.remove('is-copied');
         }, 1500);
     }).catch(err => console.error('复制失败: ', err));
 }
