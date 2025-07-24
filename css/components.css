@@ -150,15 +150,20 @@
 /* --- Header Info Component --- */
 .header-info-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .header-info-item {
-    display: flex; align-items: center; font-size: 0.9em; font-weight: 600; padding: 5px 12px;
-    border-radius: 16px; border: 1px solid rgba(0, 0, 0, 0.05); background-color: rgba(255, 255, 255, 0.7);
+    display: flex; 
+    align-items: center; 
+    font-size: 0.9em; 
+    font-weight: 600; 
+    padding: 8px 14px;
+    /* REMOVED background, border, and border-radius to unify with .interactive-glass */
 }
 .header-info-item svg { margin-right: 6px; width: 14px; height: 14px; }
-.header-info-item.status.online { background-color: #eafaf1; color: var(--green); }
-.header-info-item.status.offline { background-color: #fbebed; color: var(--red); }
-.header-info-item.status.testing { background-color: #fff8e1; color: var(--orange); }
-.header-info-item.players { background-color: #eef; color: var(--purple); }
-.header-info-item.version { background-color: #f3f3f3; color: #555; }
+
+/* REMOVED background-color, kept color for visual cues */
+.header-info-item.status.online { color: var(--green); }
+.header-info-item.status.offline { color: var(--red); }
+.header-info-item.status.testing { color: var(--orange); }
+.header-info-item.players { color: var(--purple); }
 
 /* --- Refresh Button (Now powered by .interactive-glass) --- */
 .refresh-button {

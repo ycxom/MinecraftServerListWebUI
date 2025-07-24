@@ -70,14 +70,14 @@ export async function updateUI(options = {}) {
         container.appendChild(groupDiv);
 
         const statusText = group.status === 'testing' ? '检测中' : group.status === 'online' ? '在线' : '离线';
-        const playersInfo = group.status !== 'offline' && group.players !== '?/?' ? `<span class="header-info-item players"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>${group.players}</span>` : '';
-        const versionInfo = group.status !== 'offline' && group.version !== '未知' ? `<span class="header-info-item version"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 2 13.43l1.43 1.43L2 16.29l2.14 2.14 1.43-1.43 1.43 1.43L9.14 20.57 12 17l3.57 3.57L17 22l1.43-1.43L19.86 22l2.14-2.14-1.43-1.43L22 16.29z"/></svg>${group.version}</span>` : '';
+        const playersInfo = group.status !== 'offline' && group.players !== '?/?' ? `<span class="header-info-item interactive-glass players"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>${group.players}</span>` : '';
+        const versionInfo = group.status !== 'offline' && group.version !== '未知' ? `<span class="header-info-item interactive-glass version"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 2 13.43l1.43 1.43L2 16.29l2.14 2.14 1.43-1.43 1.43 1.43L9.14 20.57 12 17l3.57 3.57L17 22l1.43-1.43L19.86 22l2.14-2.14-1.43-1.43L22 16.29z"/></svg>${group.version}</span>` : '';
 
         groupDiv.innerHTML = `
             <div class="server-group-header">
                 <h2>${group.groupName}</h2>
                 <div class="header-info-container">
-                    <span class="header-info-item status ${group.status}">${statusText}</span>
+                    <span class="header-info-item interactive-glass status ${group.status}">${statusText}</span>
                     ${playersInfo}
                     ${versionInfo}
                 </div>
