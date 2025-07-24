@@ -1,117 +1,62 @@
-/* --- Animated Copy Button --- */
+/* --- Frosted Glass Copy Button --- */
 .copy-btn {
-    --primary: #007bff; /* Using existing theme variable */
-    --red: #dc3545;
-    --green: #28a745;
-    --purple: #6f42c1;
-    --white: #fff;
-    --check-outline: var(--primary);
-    --check-bubble: var(--primary);
-
     position: relative;
-    overflow: visible; /* Allow SVG to overflow */
-    background: transparent;
-    border: none;
-    padding: 0;
-    width: 38px; /* Fixed size for the animation area */
+    width: 80px;
+    /* Adjusted width for text */
     height: 38px;
+    border-radius: 12px;
+    /* Softened border-radius */
     cursor: pointer;
-    transform-style: preserve-3d;
-    transition: transform 0.2s;
+    outline: 0;
+
+    /* Applying the new frosted glass effect from the user's example */
+    background: rgba(255, 255, 255, .08);
+    border: 2px solid transparent;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .4), 0 16px 32px rgba(0, 0, 0, .12);
+    backdrop-filter: url(#frosted);
+    -webkit-backdrop-filter: url(#frosted);
+
+    transition: all 0.2s ease;
+
+    /* Center the text content */
+    display: grid;
+    place-items: center;
+}
+
+.copy-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .6), 0 20px 40px rgba(0, 0, 0, .15);
+}
+
+.copy-btn:active,
+.copy-btn.is-copied {
+    transform: translateY(1px);
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, .8), 0 8px 16px rgba(0, 0, 0, .2);
+    background: rgba(40, 167, 69, .2);
 }
 
 .dark-theme .copy-btn {
-    --primary: #4facfe;
-    --white: #1e1e1e;
+    background: rgba(0, 0, 0, .15);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, .1), 0 16px 32px rgba(0, 0, 0, .25);
 }
 
-.copy-btn:active {
-    transform: scale(0.9);
-}
-
-.copy-btn__text,
-.copy-btn__svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    transition: opacity 0.2s, transform 0.3s;
-}
-
+/* The text element inside the glass button */
 .copy-btn__text {
-    background-color: var(--accent-color);
-    color: white;
     font-size: 0.9em;
-    opacity: 1;
-    z-index: 2;
+    font-weight: 600;
+    color: var(--text-color);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
 }
 
 .copy-btn.is-copied .copy-btn__text {
-    opacity: 0;
-    transform: scale(0.8);
+    color: #fff;
+    /* White text when copied */
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+
+/* Hide the old SVG checkmark animation container */
 .copy-btn__svg {
-    z-index: 1;
-    opacity: 0;
-    transform: scale(0);
-    pointer-events: none; /* Let clicks pass through when hidden */
+    display: none;
 }
-
-.copy-btn.is-copied .copy-btn__svg {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
-}
-
-/* SVG Animation Styles from example */
-.check {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.check__stroke-offset {
-    stroke-dasharray: 17 17;
-    stroke-dashoffset: 17;
-    animation: s 0.4s ease-out forwards;
-}
-.check__stroke-offset--2 { animation-delay: 0.1s; }
-.check__stroke-offset--3 { animation-delay: 0.2s; }
-.check__stroke-offset--4 { animation-delay: 0.15s; }
-
-.check__move-fade { animation: mf 0.3s ease-in-out forwards; }
-.check__move-fade--2 { animation-delay: 0.05s; }
-.check__move-fade--3 { animation-delay: 0.1s; }
-.check__move-fade--4 { animation-delay: 0.15s; }
-.check__move-fade--5 { animation-delay: 0.2s; }
-
-.check__scale-out {
-    transform-origin: 50% 50%;
-    animation: so 0.3s ease-in-out forwards;
-}
-.check__fade {
-    opacity: 0;
-    animation: f 0.3s ease-out 0.25s forwards;
-}
-.check__scale-in {
-    transform: scale(0);
-    transform-origin: 50% 50%;
-    animation: si 0.3s cubic-bezier(0.5, 0, 0.5, 2) 0.2s forwards;
-}
-
-/* Keyframes */
-@keyframes s { to { stroke-dashoffset: 0; } }
-@keyframes mf {
-    0% { transform: translate(0,0); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translate(var(--tx, 0), var(--ty, 0)); opacity: 0; }
-}
-@keyframes so { to { transform: scale(0); } }
-@keyframes f { to { opacity: 1; } }
-@keyframes si { to { transform: scale(1); } }

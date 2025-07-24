@@ -1,19 +1,28 @@
-.hero-header {
+/* Base style for all elements that will receive the interactive glass effect */
+.interactive-glass {
+    background: rgba(255, 255, 255, 0.05); /* More subtle background */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Inner glow effect and soft outer shadow */
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.5), 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-radius: 24px; /* Larger radius for VisionOS style */
     position: relative;
     z-index: 1;
-    padding: 60px 20px;
-    text-align: center;
-    border-radius: 16px;
-    margin-bottom: 30px;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.25);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+    color: var(--text-color);
+    transition: background 0.3s, box-shadow 0.3s;
 }
 
-.dark-theme .hero-header {
-    background-color: rgba(0, 0, 0, 0.5);
+.dark-theme .interactive-glass {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.hero-header.interactive-glass {
+    padding: 60px 20px;
+    text-align: center;
+    margin-bottom: 30px;
+    color: white; /* Hero text should be white */
 }
 
 .hero-header h1 {
@@ -52,21 +61,24 @@
     text-shadow: none;
 }
 
-/* --- Server Group Container --- */
+/* Server Group Container inherits from .interactive-glass */
 .server-group {
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.3);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 16px;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.2), 0 4px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
     margin-bottom: 25px;
     padding: 20px;
+    will-change: transform, opacity;
+    position: relative;
     z-index: 1;
+    overflow: hidden;
 }
+
 .dark-theme .server-group {
-    background-color: rgba(30, 30, 30, 0.5);
+    background: rgba(30, 30, 30, 0.3);
     border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.1), 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .server-group-header {
@@ -76,13 +88,13 @@
     align-items: center;
     gap: 10px;
     color: var(--text-color);
-    border-bottom: 1px solid rgba(222, 226, 230, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     padding-bottom: 15px;
-    margin-bottom: 20px; /* Space between header and node list */
+    margin-bottom: 20px;
 }
 
 .dark-theme .server-group-header {
-    border-bottom-color: var(--border-color);
+    border-bottom-color: rgba(255, 255, 255, 0.15);
 }
 
 .server-group-header h2 {
@@ -103,19 +115,10 @@
     perspective: 800px;
 }
 
-.page-footer {
+.page-footer.interactive-glass {
     text-align: center;
     margin-top: 40px;
     padding: 20px;
     font-size: 0.9em;
     color: var(--subtle-text-color);
-    background-color: rgba(0, 0, 0, 0.2);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.dark-theme .page-footer {
-    background-color: rgba(0, 0, 0, 0.4);
 }

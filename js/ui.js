@@ -1,9 +1,23 @@
 import { DropdownMenu } from './components/DropdownMenu.js';
+import { InteractiveGlass } from './components/InteractiveGlass.js'; // <-- 导入新组件
 import { getState, setState } from './state.js';
 import { getLatencyClass } from './utils.js';
 
+let glassInstances = []; // <-- 用于管理特效实例的数组
+
 function cleanupAnimationClasses(elements, ...classes) {
     elements.forEach(el => el.classList.remove(...classes));
+}
+
+function applyInteractiveGlass() {
+    // 销毁旧实例以防止内存泄漏
+    glassInstances.forEach(instance => instance.destroy());
+    glassInstances = [];
+
+    // 为所有标记了 .interactive-glass 的元素创建新实例
+    document.querySelectorAll('.interactive-glass').forEach(el => {
+        glassInstances.push(new InteractiveGlass(el));
+    });
 }
 
 export async function updateUI(options = {}) {
@@ -17,15 +31,29 @@ export async function updateUI(options = {}) {
     const oldNodes = Array.from(container.querySelectorAll('.node-drawer'));
     const oldPositions = new Map();
 
-    // Decide which animation to run
     if (isRefresh && !skipAnimations) {
-        // FLIP animation for refresh still targets nodes for re-ordering
         oldNodes.forEach(nodeEl => {
             oldPositions.set(nodeEl.id, nodeEl.getBoundingClientRect());
         });
     } else if (!isRefresh && oldGroups.length > 0 && !skipAnimations) {
-        // Genie animation for group switch now targets the whole group
-        oldGroups.forEach(group => group.classList.add('genie-out'));
+        // 在开始动画前，先销毁旧卡片的特效实例
+        glassInstances.forEach(instance => {
+            if (oldGroups.includes(instance.element)) {
+                instance.destroy();
+            }
+        });
+
+        const dropdownButton = document.getElementById('group-selector-btn');
+        const buttonRect = dropdownButton.getBoundingClientRect();
+        const targetX = buttonRect.left + buttonRect.width / 2;
+        const targetY = buttonRect.top + buttonRect.height / 2;
+        oldGroups.forEach(groupEl => {
+            const groupRect = groupEl.getBoundingClientRect();
+            const originX = ((targetX - groupRect.left) / groupRect.width) * 100;
+            const originY = ((targetY - groupRect.top) / groupRect.height) * 100;
+            groupEl.style.transformOrigin = `${originX}% ${originY}%`;
+            groupEl.classList.add('genie-out');
+        });
         await new Promise(resolve => setTimeout(resolve, 400));
     }
 
@@ -37,8 +65,8 @@ export async function updateUI(options = {}) {
 
     groupsToDisplay.forEach(group => {
         let groupDiv = document.createElement('div');
-        const animationClass = !isRefresh && !skipAnimations ? 'genie-in' : '';
-        groupDiv.className = `server-group ${animationClass}`;
+        // 添加 interactive-glass 类以便JS可以找到并应用特效
+        groupDiv.className = 'server-group interactive-glass';
         container.appendChild(groupDiv);
 
         const statusText = group.status === 'testing' ? '检测中' : group.status === 'online' ? '在线' : '离线';
@@ -67,97 +95,60 @@ export async function updateUI(options = {}) {
         group.nodes.forEach(node => {
             const drawerId = `drawer-${group.groupName}-${node.nodeName}`.replace(/[\s.]+/g, '-');
             const drawerDiv = document.createElement('div');
-            // Animation class is now on the parent, not the drawer
             drawerDiv.className = `node-drawer ${node.isOpen ? ' is-open' : ''}`;
             drawerDiv.id = drawerId;
-
             const summaryLatencyClass = getLatencyClass(node.bestLatency);
             const latencyText = group.status === 'testing' ? '检测中...' : node.bestLatency >= 0 ? `${node.bestLatency} ms` : '超时';
-
             drawerDiv.innerHTML = `
-        <button class="node-header" type="button">
-            <span class="node-name">${node.nodeName}</span>
-            <div class="node-header__summary">
-                <span class="summary-latency ${group.status === 'offline' ? 'offline' : summaryLatencyClass}">${latencyText}</span>
-                <svg class="node-header__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
-            </div>
-        </button>
-        <div class="node-content-wrapper">
-            ${node.versions.map(version => `
-                <div class="version-entry">
-                    <div class="version-info">
-                        <span class="version-address">${version.fullAddress}</span>
-                        <span class="version-type">${version.type}版</span>
-                    </div>
-                    <div class="version-details">
-                        <span class="version-latency ${getLatencyClass(version.latency)}">${version.latency < 0 ? '-' : version.latency >= 5000 ? '超时' : `${version.latency} ms`}</span>
-                        <button class="copy-btn" data-address="${version.fullAddress}">
-                            <span class="copy-btn__text">复制</span>
-                            <span class="copy-btn__svg">
-                                <svg class="check" viewBox="0 0 64 64" aria-hidden="true">
-                                    <g transform="translate(32,32)">
-                                        <g stroke-linecap="round" stroke-width="3">
-                                            <polyline class="check__stroke-offset check__stroke-offset--1" stroke="var(--purple)" points="-30 -30,-42 -42" stroke-dasharray="17 17" stroke-dashoffset="17"></polyline>
-                                            <polyline class="check__stroke-offset check__stroke-offset--2" stroke="var(--primary)" points="38 -38,54 -54" stroke-dasharray="22.63 22.63" stroke-dashoffset="22.63"></polyline>
-                                            <polyline class="check__stroke-offset check__stroke-offset--3" stroke="var(--green)" points="-28 28,-40 40" stroke-dasharray="17 17" stroke-dashoffset="17"></polyline>
-                                            <polyline class="check__stroke-offset check__stroke-offset--4" stroke="var(--red)" points="32 32,44 44" stroke-dasharray="17 17" stroke-dashoffset="17"></polyline>
-                                        </g>
-                                        <g>
-                                            <circle class="check__move-fade check__move-fade--1" fill="var(--red)" r="3" cx="4" cy="-44" opacity="0"></circle>
-                                            <circle class="check__move-fade check__move-fade--2" fill="var(--primary)" r="3" cx="-44" cy="-8" opacity="0"></circle>
-                                            <circle class="check__move-fade check__move-fade--3" fill="var(--green)" r="3" cx="52" cy="12" opacity="0"></circle>
-                                            <circle class="check__move-fade check__move-fade--4" fill="var(--purple)" r="2" cx="-2" cy="40" opacity="0"></circle>
-                                            <circle class="check__move-fade check__move-fade--5" fill="var(--primary)" r="3" cx="-12" cy="46" opacity="0"></circle>
-                                        </g>
-                                        <g class="check__scale-out" fill="none" stroke="var(--check-outline)" stroke-width="2">
-                                            <circle r="30"></circle>
-                                            <polygon points="-10 -4,-16 2,-4 14,16 -6,10 -12,-4 2"></polygon>
-                                        </g>
-                                        <g class="check__fade" opacity="0">
-                                            <circle class="check__scale-in check__scale-in--1" fill="var(--check-bubble)" r="30.9"></circle>
-                                            <circle class="check__scale-in check__scale-in--2" fill="var(--primary)" r="31"></circle>
-                                            <polygon class="check__scale-in check__scale-in--3" fill="var(--white)" stroke="var(--primary)" stroke-width="2" points="-10 -4,-16 2,-4 14,16 -6,10 -12,-4 2"></polygon>
-                                        </g>
-                                    </g>
-                                </svg>
-                            </span>
-                        </button>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-    `;
+                <button class="node-header" type="button"><span class="node-name">${node.nodeName}</span><div class="node-header__summary"><span class="summary-latency ${group.status === 'offline' ? 'offline' : summaryLatencyClass}">${latencyText}</span><svg class="node-header__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg></div></button>
+                <div class="node-content-wrapper">${node.versions.map(version => `<div class="version-entry"><div class="version-info"><span class="version-address">${version.fullAddress}</span><span class="version-type">${version.type}版</span></div><div class="version-details"><span class="version-latency ${getLatencyClass(version.latency)}">${version.latency < 0 ? '-' : version.latency >= 5000 ? '超时' : `${version.latency} ms`}</span><button class="copy-btn" data-address="${version.fullAddress}"><span class="copy-btn__text">复制</span></button></div></div>`).join('')}</div>
+            `;
             nodesContainer.appendChild(drawerDiv);
         });
     });
 
-    // Apply animations post-render
-    if (isRefresh && !skipAnimations) {
-        // FLIP post-render logic remains the same
-        document.querySelectorAll('.node-drawer').forEach(nodeEl => {
-            const oldPos = oldPositions.get(nodeEl.id);
-            if (!oldPos) return;
-            const newPos = nodeEl.getBoundingClientRect();
-            const deltaX = oldPos.left - newPos.left;
-            const deltaY = oldPos.top - newPos.top;
+    // 等待DOM渲染完成后应用特效
+    requestAnimationFrame(() => {
+        applyInteractiveGlass();
 
-            if (Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) {
-                nodeEl.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                requestAnimationFrame(() => {
-                    nodeEl.classList.add('flip-list-move');
-                    nodeEl.style.transform = '';
+        if (isRefresh && !skipAnimations) {
+            document.querySelectorAll('.node-drawer').forEach(nodeEl => {
+                const oldPos = oldPositions.get(nodeEl.id);
+                if (!oldPos) return;
+                const newPos = nodeEl.getBoundingClientRect();
+                const deltaX = oldPos.left - newPos.left;
+                const deltaY = oldPos.top - newPos.top;
+                if (Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1) {
+                    nodeEl.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    requestAnimationFrame(() => {
+                        nodeEl.classList.add('flip-list-move');
+                        nodeEl.style.transform = '';
+                    });
+                    nodeEl.addEventListener('transitionend', () => nodeEl.classList.remove('flip-list-move'), { once: true });
+                }
+            });
+        } else if (!isRefresh && !skipAnimations) {
+            const newGroups = container.querySelectorAll('.server-group');
+            if (newGroups.length > 0) {
+                const dropdownButton = document.getElementById('group-selector-btn');
+                const buttonRect = dropdownButton.getBoundingClientRect();
+                const targetX = buttonRect.left + buttonRect.width / 2;
+                const targetY = buttonRect.top + buttonRect.height / 2;
+                newGroups.forEach(groupEl => {
+                    const groupRect = groupEl.getBoundingClientRect();
+                    const originX = ((targetX - groupRect.left) / groupRect.width) * 100;
+                    const originY = ((targetY - groupRect.top) / groupRect.height) * 100;
+                    groupEl.style.transformOrigin = `${originX}% ${originY}%`;
+                    groupEl.classList.add('genie-in');
                 });
-                nodeEl.addEventListener('transitionend', () => {
-                    nodeEl.classList.remove('flip-list-move');
-                }, { once: true });
             }
-        });
-    } else if (!isRefresh && !skipAnimations) {
-        // Genie cleanup now targets the server-group
-        setTimeout(() => {
-            cleanupAnimationClasses(document.querySelectorAll('.server-group'), 'genie-in');
-        }, 500);
-    }
+            setTimeout(() => {
+                const groupsToClean = document.querySelectorAll('.server-group');
+                cleanupAnimationClasses(groupsToClean, 'genie-in');
+                groupsToClean.forEach(g => g.style.transformOrigin = '');
+            }, 500);
+        }
+    });
 
     setState({ isTransitioning: false });
 }
@@ -167,9 +158,7 @@ export function populateGroupSelector() {
     const itemsContainer = container.querySelector('.drop-down__items-inner');
     const { serverData } = getState();
     itemsContainer.innerHTML = '';
-
     const options = [{ name: '全部服务器', value: 'all' }, ...serverData.map(g => ({ name: g.groupName, value: g.groupName }))];
-
     options.forEach(opt => {
         const item = document.createElement('button');
         item.className = 'drop-down__item';
@@ -178,15 +167,12 @@ export function populateGroupSelector() {
         item.setAttribute('data-value', opt.value);
         itemsContainer.appendChild(item);
     });
-
     const dropdown = new DropdownMenu(container, {
         onSelect: (value) => {
             container.setAttribute('data-selected-value', value);
-            // FIX: Ensure this triggers the genie effect by setting isRefresh to false
             updateUI({ isRefresh: false });
         }
     });
-
     container.setAttribute('data-selected-value', 'all');
     dropdown.updateSelected('all');
     setState({ groupSelectorDropdown: dropdown });
@@ -197,28 +183,22 @@ export function startCountdown() {
     const progressBar = document.getElementById('progressBar');
     const totalDuration = 60;
     let seconds = totalDuration;
-
     if (window.countdownInterval) clearInterval(window.countdownInterval);
-
-    progressBar.style.transition = `width 1s linear`;
-    progressBar.style.width = '100%';
-
-    const updateCountdown = () => {
-        const percentage = (seconds / totalDuration) * 100;
-        progressBar.style.width = `${percentage}%`;
+    progressBar.style.transition = `transform ${totalDuration}s linear`;
+    progressBar.style.transform = 'scaleX(1)';
+    requestAnimationFrame(() => {
+        progressBar.style.transform = 'scaleX(0)';
+    });
+    const updateCountdownText = () => {
         countdownElement.textContent = `${seconds} 秒后自动刷新...`;
-
         if (seconds <= 0) {
             clearInterval(window.countdownInterval);
             document.getElementById('refresh-btn').click();
         }
         seconds--;
     };
-
-    setTimeout(() => {
-        updateCountdown();
-        window.countdownInterval = setInterval(updateCountdown, 1000);
-    }, 50);
+    updateCountdownText();
+    window.countdownInterval = setInterval(updateCountdownText, 1000);
 }
 
 export function showLoadingAnimation() {
@@ -230,4 +210,6 @@ export function applyPageConfig(config) {
     document.getElementById('main-title').textContent = config.title || 'MC服务器状态面板';
     document.getElementById('subtitle').textContent = config.subtitle || '一个Minecraft服务器状态面板';
     document.getElementById('page-footer').textContent = config.footer || '';
+    // Initial application of glass effect to static elements
+    requestAnimationFrame(applyInteractiveGlass);
 }

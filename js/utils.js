@@ -5,16 +5,28 @@ export function getLatencyClass(latency) {
     return 'latency-bad';
 }
 
-export function copyAddress(address, element) {
-    if (element.classList.contains('is-copied')) {
+export function copyAddress(address, buttonElement) {
+    // Prevent re-triggering animation if it's already running
+    if (buttonElement.classList.contains('is-copied')) {
         return;
     }
 
     navigator.clipboard.writeText(address).then(() => {
-        element.classList.add('is-copied');
+        const textElement = buttonElement.querySelector('.copy-btn__text');
+
+        // Store original text
+        const originalText = textElement.textContent;
+
+        // Add class for visual feedback and change text
+        buttonElement.classList.add('is-copied');
+        textElement.textContent = '已复制!';
+
+        // Revert after 1.5 seconds
         setTimeout(() => {
-            element.classList.remove('is-copied');
+            buttonElement.classList.remove('is-copied');
+            textElement.textContent = originalText;
         }, 1500);
+
     }).catch(err => console.error('复制失败: ', err));
 }
 

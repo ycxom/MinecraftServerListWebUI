@@ -1,8 +1,10 @@
 import { loadAndProcessConfig } from './config.js';
 import { populateGroupSelector, updateUI, showLoadingAnimation } from './ui.js';
 import { testAllServers } from './api.js';
-import { detectAndApplyTheme, copyAddress, loadBackgroundImage } from './utils.js'; // Import loadBackgroundImage
+import { detectAndApplyTheme, copyAddress, loadBackgroundImage } from './utils.js';
 import { getState, setState, initState } from './state.js';
+
+// No longer importing liquid-glass.js
 
 async function main() {
     showLoadingAnimation();
@@ -68,7 +70,7 @@ document.addEventListener('click', function (event) {
 
 window.addEventListener('load', () => {
     detectAndApplyTheme();
-    loadBackgroundImage(); // FIX: Re-added the function call here
+    loadBackgroundImage();
     main();
 });
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", detectAndApplyTheme);

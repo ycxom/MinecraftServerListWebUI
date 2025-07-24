@@ -78,11 +78,10 @@ export async function testAllServers(isInitialLoad = false) {
     if (window.countdownInterval) clearInterval(window.countdownInterval);
 
     const progressBar = document.getElementById('progressBar');
-    progressBar.style.transition = 'width 0.5s ease';
-    progressBar.style.width = '0%';
+    progressBar.style.transition = 'transform 0.5s ease';
+    progressBar.style.transform = 'scaleX(0)';
     progressBar.classList.add('progress-pulse');
 
-    // During refresh, we don't need a full animated update here
     if (!isInitialLoad) {
         await updateUI({ isRefresh: true, skipAnimations: true });
     }
@@ -106,15 +105,35 @@ export async function testAllServers(isInitialLoad = false) {
 
     const allVersions = results.flatMap(g => g.nodes.flatMap(n => n.versions));
     let completedCount = 0;
+    let animationFrameId = null;
+
+    // --- PERFORMANCE OPTIMIZATION ---
+    // Use requestAnimationFrame to batch DOM updates for the progress bar.
+    // This prevents layout thrashing by ensuring we only update the DOM once per frame.
+    const updateProgressBar = () => {
+        const percentage = (completedCount / allVersions.length);
+        progressBar.style.transform = `scaleX(${percentage})`;
+        animationFrameId = null; // Reset ID after execution
+    };
 
     const latencyPromises = allVersions.map(async (version) => {
         version.latency = await probeNodeLatency(version.fullAddress);
         version.timestamp = new Date().toLocaleTimeString();
         completedCount++;
-        progressBar.style.width = `${(completedCount / allVersions.length) * 100}%`;
+        // Request an animation frame, but don't schedule a new one if one is already pending.
+        if (!animationFrameId) {
+            animationFrameId = requestAnimationFrame(updateProgressBar);
+        }
     });
 
     await Promise.all(latencyPromises);
+
+    // Ensure the final state of the progress bar is rendered
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+    }
+    updateProgressBar();
+
 
     results.forEach(group => {
         group.nodes.forEach(node => {
@@ -126,7 +145,6 @@ export async function testAllServers(isInitialLoad = false) {
     setState({ results });
 
     progressBar.classList.remove('progress-pulse');
-    // FIX: Pass appropriate flag to distinguish refresh from initial load/group switch
     await updateUI({ isRefresh: !isInitialLoad });
     startCountdown();
 }
