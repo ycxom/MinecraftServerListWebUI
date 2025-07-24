@@ -1,11 +1,10 @@
-/* --- Dropdown Component Styles --- */
 .drop-down {
-    /* This is now just a container for positioning */
+
     position: relative;
 }
 
 .drop-down__btn {
-    background: transparent; /* Background is now handled by .interactive-glass */
+    background: transparent;
     border: none;
     color: var(--text-color);
     cursor: pointer;
@@ -14,13 +13,16 @@
     padding: 10px 16px;
     text-align: left;
     width: 100%;
-    /* REMOVED: z-index hack is no longer necessary */
+
 }
-.drop-down__btn:focus { outline: none; }
+
+.drop-down__btn:focus {
+    outline: none;
+}
 
 .drop-down__items {
-    /* REMOVED: Conflicting backdrop-filter and background styles. */
-    /* This will now get its appearance from the .interactive-glass class. */
+
+
     border-radius: 12px;
     height: 0;
     opacity: 0;
@@ -31,10 +33,11 @@
     width: 100%;
     z-index: 100;
     visibility: hidden;
-    transition: opacity 0.4s ease, visibility 0.4s ease; /* Adjusted transition */
+    transition: opacity 0.4s ease, visibility 0.4s ease;
 }
+
 .drop-down[aria-expanded="true"] .drop-down__items {
-    height: auto; /* Let content determine height */
+    height: auto;
     opacity: 1;
     visibility: visible;
 }
@@ -58,10 +61,17 @@
     width: 100%;
     transition: background-color 0.2s ease;
 }
-.drop-down__item:hover { background-color: var(--drop-hover-bg, rgba(0, 0, 0, 0.1)); }
-.drop-down__item--selected { font-weight: 700; background-color: var(--drop-hover-bg, rgba(0, 0, 0, 0.1)); }
 
-/* --- Node Drawer Component Styles --- */
+.drop-down__item:hover {
+    background-color: var(--drop-hover-bg, rgba(0, 0, 0, 0.1));
+}
+
+.drop-down__item--selected {
+    font-weight: 700;
+    background-color: var(--drop-hover-bg, rgba(0, 0, 0, 0.1));
+}
+
+
 .node-drawer {
     background-color: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -72,6 +82,7 @@
     grid-template-rows: auto 0fr;
     transition: grid-template-rows 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
+
 .dark-theme .node-drawer {
     background-color: rgba(0, 0, 0, 0.2);
     border-color: rgba(255, 255, 255, 0.05);
@@ -96,25 +107,39 @@
     justify-content: space-between;
     align-items: center;
 }
-.node-header:focus { outline: none; }
+
+.node-header:focus {
+    outline: none;
+}
+
 .node-header__icon {
     transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
     width: 20px;
     height: 20px;
     color: var(--subtle-text-color);
 }
+
 .node-drawer.is-open .node-header__icon {
     transform: rotate(90deg);
 }
+
 .node-header__summary {
     display: flex;
     align-items: center;
     gap: 15px;
 }
-.summary-latency { font-weight: 600; }
-.summary-latency.offline { color: var(--red); }
 
-.node-content-wrapper { overflow: hidden; }
+.summary-latency {
+    font-weight: 600;
+}
+
+.summary-latency.offline {
+    color: var(--red);
+}
+
+.node-content-wrapper {
+    overflow: hidden;
+}
 
 .version-entry {
     display: flex;
@@ -123,21 +148,68 @@
     padding: 15px 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
-.dark-theme .version-entry { border-top-color: rgba(255, 255, 255, 0.1); }
-.version-info { display: flex; flex-direction: column; gap: 4px; }
-.version-address { font-weight: 600; font-family: 'SF Mono', 'Courier New', Courier, monospace; }
-.version-type { font-size: 0.9em; color: var(--subtle-text-color); }
-.version-details { display: flex; align-items: center; gap: 15px; text-align: right; }
-.version-latency { min-width: 70px; font-weight: 500; }
-.copy-btn {
-    position: relative; overflow: hidden; background-color: var(--accent-color); color: white; border: none;
-    border-radius: 8px; padding: 8px 14px; font-size: 0.9em; cursor: pointer; transition: background-color 0.2s, transform 0.1s;
-}
-.copy-btn:active { transform: scale(0.95); }
-.copy-btn.copied { background-color: var(--green); }
 
-/* --- Header Info Component --- */
-.header-info-container { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dark-theme .version-entry {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.version-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.version-address {
+    font-weight: 600;
+    font-family: 'SF Mono', 'Courier New', Courier, monospace;
+}
+
+.version-type {
+    font-size: 0.9em;
+    color: var(--subtle-text-color);
+}
+
+.version-details {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-align: right;
+}
+
+.version-latency {
+    min-width: 70px;
+    font-weight: 500;
+}
+
+.copy-btn {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.copy-btn:active {
+    transform: scale(0.95);
+}
+
+.copy-btn.copied {
+    background-color: var(--green);
+}
+
+
+.header-info-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
 .header-info-item {
     display: flex;
     align-items: center;
@@ -145,14 +217,30 @@
     font-weight: 600;
     padding: 8px 14px;
 }
-.header-info-item svg { margin-right: 6px; width: 14px; height: 14px; }
 
-.header-info-item.status.online { color: var(--green); }
-.header-info-item.status.offline { color: var(--red); }
-.header-info-item.status.testing { color: var(--orange); }
-.header-info-item.players { color: var(--purple); }
+.header-info-item svg {
+    margin-right: 6px;
+    width: 14px;
+    height: 14px;
+}
 
-/* --- Refresh Button --- */
+.header-info-item.status.online {
+    color: var(--green);
+}
+
+.header-info-item.status.offline {
+    color: var(--red);
+}
+
+.header-info-item.status.testing {
+    color: var(--orange);
+}
+
+.header-info-item.players {
+    color: var(--purple);
+}
+
+
 .refresh-button {
     padding: 10px 16px;
     cursor: pointer;
@@ -163,21 +251,82 @@
     color: var(--text-color);
     background: transparent;
     border: none;
-    /* box-shadow: none; */
+
 }
 
-/* --- Progress Bar and Countdown --- */
+
 .ping-progress {
-    height: 6px; width: 100%; background-color: rgba(233, 236, 239, 0.7); margin: 20px 0;
-    /* border-radius: 3px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); */
+    height: 6px;
+    width: 100%;
+    background-color: rgba(233, 236, 239, 0.7);
+    margin: 20px 0;
+
 }
-.dark-theme .ping-progress { background-color: rgba(50, 50, 50, 0.5); }
+
+.dark-theme .ping-progress {
+    background-color: rgba(50, 50, 50, 0.5);
+}
+
 .ping-progress-bar {
-    height: 100%; background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%); width: 100%;
-    transform: scaleX(0); transform-origin: left; transition: transform 0.5s ease; will-change: transform;
+    height: 100%;
+    background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+    width: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s ease;
+    will-change: transform;
 }
+
 .countdown {
-    text-align: center; margin-top: 30px; font-size: 1em; color: var(--text-color);
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7); font-weight: 500;
+    text-align: center;
+    margin-top: 30px;
+    font-size: 1em;
+    color: var(--text-color);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
+    font-weight: 500;
 }
-.dark-theme .countdown { text-shadow: none; }
+
+.dark-theme .countdown {
+    text-shadow: none;
+}
+
+@media (max-width: 767px) {
+    .version-entry {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .version-info {
+        width: 100%;
+    }
+
+
+    .version-details {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        width: 100%;
+    }
+
+
+    .version-latency {
+        width: 100%;
+        text-align: left;
+    }
+
+
+    .copy-btn {
+        width: 100%;
+        padding: 12px 14px;
+        margin-top: 5px;
+        box-sizing: border-box;
+    }
+
+
+    .copy-btn__text {
+        text-align: center;
+        display: block;
+    }
+}

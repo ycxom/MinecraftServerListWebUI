@@ -1,24 +1,33 @@
 /* Base style for all elements that will receive the interactive glass effect */
 .interactive-glass {
-    background: rgba(255, 255, 255, 0.05); /* More subtle background */
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    /* Inner glow effect and soft outer shadow */
-    border-radius: 24px; /* Larger radius for VisionOS style */
+    border-radius: 24px;
     position: relative;
     z-index: 1;
     overflow: hidden;
     color: var(--text-color);
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+        0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .dark-theme .interactive-glass {
     background: rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 .hero-header.interactive-glass {
     padding: 60px 20px;
     text-align: center;
     margin-bottom: 30px;
-    color: white; /* Hero text should be white */
+    color: white;
+
 }
 
 .hero-header h1 {
@@ -50,7 +59,7 @@
     margin-right: 0;
     font-weight: 600;
     color: var(--text-color);
-    text-shadow: 0 1px 2px rgba(255,255,255,0.7);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.7);
 }
 
 .dark-theme .controls label {
@@ -95,11 +104,11 @@
     padding: 0;
     font-size: 1.75em;
     font-weight: 700;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .dark-theme .server-group-header h2 {
-     text-shadow: none;
+    text-shadow: none;
 }
 
 .nodes-container {
