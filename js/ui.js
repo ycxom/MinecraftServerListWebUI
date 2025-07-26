@@ -1,9 +1,18 @@
 import { DropdownMenu } from './components/DropdownMenu.js';
-import { InteractiveGlass } from './components/InteractiveGlass.js'; // <-- 导入新组件
+import { InteractiveGlass } from './components/InteractiveGlass.js';
 import { getState, setState } from './state.js';
 import { getLatencyClass } from './utils.js';
 
-let glassInstances = []; // <-- 用于管理特效实例的数组
+let glassInstances = []; // Manages all active glass effect instances
+
+/**
+ * Gets the glass instance associated with a specific HTML element.
+ * @param {HTMLElement} element The element to find the instance for.
+ * @returns {InteractiveGlass|undefined}
+ */
+export function getGlassInstance(element) {
+    return glassInstances.find(inst => inst.element === element);
+}
 
 function cleanupAnimationClasses(elements, ...classes) {
     elements.forEach(el => el.classList.remove(...classes));
@@ -16,7 +25,10 @@ function applyInteractiveGlass() {
 
     // 为所有标记了 .interactive-glass 的元素创建新实例
     document.querySelectorAll('.interactive-glass').forEach(el => {
-        glassInstances.push(new InteractiveGlass(el));
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) { // Only apply to visible elements
+            glassInstances.push(new InteractiveGlass(el));
+        }
     });
 }
 
@@ -65,7 +77,6 @@ export async function updateUI(options = {}) {
 
     groupsToDisplay.forEach(group => {
         let groupDiv = document.createElement('div');
-        // 添加 interactive-glass 类以便JS可以找到并应用特效
         groupDiv.className = 'server-group interactive-glass';
         container.appendChild(groupDiv);
 
@@ -107,7 +118,6 @@ export async function updateUI(options = {}) {
         });
     });
 
-    // 等待DOM渲染完成后应用特效
     requestAnimationFrame(() => {
         applyInteractiveGlass();
 
@@ -210,6 +220,6 @@ export function applyPageConfig(config) {
     document.getElementById('main-title').textContent = config.title || 'MC服务器状态面板';
     document.getElementById('subtitle').textContent = config.subtitle || '一个Minecraft服务器状态面板';
     document.getElementById('page-footer').textContent = config.footer || '';
-    // Initial application of glass effect to static elements
+
     requestAnimationFrame(applyInteractiveGlass);
 }

@@ -14,6 +14,7 @@
  * - FIX: Ensured all canvas and ImageData dimensions are rounded to integers to prevent crashes.
  * - REFACTOR: Removed all hardcoded styles (background, border, etc.) to prevent conflicts
  * with external CSS files. This script is now solely responsible for the filter effect.
+ * - ADDED: A `resize` method for efficient, real-time resizing during animations.
  */
 
 function smoothStep(a, b, t) {
@@ -44,17 +45,8 @@ export class InteractiveGlass {
         if (!element) return;
         this.element = element;
         this.id = generateId();
-        // Mouse related properties removed for static effect
-        // this.mouse = { x: 0.5, y: 0.5, isOver: false };
-
-        // Mouse event handlers removed
-        // this.onMouseMove = this.onMouseMove.bind(this);
-        // this.onMouseLeave = this.onMouseLeave.bind(this);
-        this.update = this.update.bind(this); // Only update is needed
-
-        // Add a canvasDPI property for consistency with liquid-glass.js
+        this.update = this.update.bind(this);
         this.canvasDPI = 1;
-
         this.init();
     }
 
@@ -63,26 +55,20 @@ export class InteractiveGlass {
         this.width = Math.round(rect.width);
         this.height = Math.round(rect.height);
 
-        // Crucial check: if dimensions are zero, filter won't work.
         if (this.width === 0 || this.height === 0) {
-            console.warn(`InteractiveGlass: Element ${this.element.id || this.element.className} has zero dimensions (${this.width}x${this.height}). Skipping initialization.`);
-            // Potentially re-try initialization after a delay if desired, or assume caller will retry.
+            console.warn(`InteractiveGlass: Element ${this.element.id || this.element.className} has zero dimensions. Skipping initialization.`);
             return;
         }
 
         this.createSVGFilter();
         this.createCanvas();
 
-        // Apply backdrop-filter with full liquid-glass effect parameters
         this.element.style.backdropFilter = `url(#${this.id}_filter) blur(0.25px) contrast(1.2) brightness(1.05) saturate(1.1)`;
         this.element.style.webkitBackdropFilter = `url(#${this.id}_filter) blur(0.25px) contrast(1.2) brightness(1.05) saturate(1.1)`;
 
-        // Mouse event listeners removed
-        // this.element.addEventListener('mousemove', this.onMouseMove);
-        // this.element.addEventListener('mouseleave', this.onMouseLeave);
-
         this.update();
     }
+
     createSVGFilter() {
         if (document.getElementById(`${this.id}_svg`)) return;
 
@@ -95,22 +81,17 @@ export class InteractiveGlass {
         const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         const filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
         filter.setAttribute('id', `${this.id}_filter`);
-        filter.setAttribute('filterUnits', 'userSpaceOnUse'); // 保持 userSpaceOnUse
+        filter.setAttribute('filterUnits', 'userSpaceOnUse');
         filter.setAttribute('color-interpolation-filters', 'sRGB');
-
-        // 关键修正：确保滤镜的区域与元素的实际尺寸匹配
-        filter.setAttribute('x', '0'); // 从元素左上角开始
-        filter.setAttribute('y', '0'); // 从元素左上角开始
-        filter.setAttribute('width', this.width.toString()); // 设置滤镜宽度为元素宽度
-        filter.setAttribute('height', this.height.toString()); // 设置滤镜高度为元素高度
-
+        filter.setAttribute('x', '0');
+        filter.setAttribute('y', '0');
+        filter.setAttribute('width', this.width.toString());
+        filter.setAttribute('height', this.height.toString());
 
         this.feImage = document.createElementNS('http://www.w3.org/2000/svg', 'feImage');
         this.feImage.setAttribute('id', `${this.id}_map`);
-        // 关键修正：确保 feImage 覆盖整个滤镜区域
-        this.feImage.setAttribute('width', this.width.toString()); // 设置 feImage 宽度为元素宽度
-        this.feImage.setAttribute('height', this.height.toString()); // 设置 feImage 高度为元素高度
-
+        this.feImage.setAttribute('width', this.width.toString());
+        this.feImage.setAttribute('height', this.height.toString());
 
         this.feDisplacementMap = document.createElementNS('http://www.w3.org/2000/svg', 'feDisplacementMap');
         this.feDisplacementMap.setAttribute('in', 'SourceGraphic');
@@ -124,6 +105,7 @@ export class InteractiveGlass {
         this.svg.appendChild(defs);
         document.body.appendChild(this.svg);
     }
+
     createCanvas() {
         this.canvas = document.createElement('canvas');
         this.canvas.width = this.width * this.canvasDPI;
@@ -132,41 +114,24 @@ export class InteractiveGlass {
         this.context = this.canvas.getContext('2d');
     }
 
-    // Removed onMouseMove and onMouseLeave
-
     fragment(uv) {
         const ix = uv.x - 0.5;
         const iy = uv.y - 0.5;
 
-        // 将 roundedRectSDF 的参数精确地恢复为 liquid-glass.js 的原始值
-        // 这些参数定义了液态玻璃效果的核心扭曲形状
-        const distanceToEdge = roundedRectSDF(
-            ix,
-            iy,
-            0.25, // liquid-glass.js 原始的半宽度参数
-            0.25, // liquid-glass.js 原始的半高度参数
-            0.552  // liquid-glass.js 原始的圆角半径参数
-        );
-
-        // liquid-glass.js 原始的位移计算，用于获取平滑的过渡值
-        // displacement 的值范围在 0 到 1 之间。
+        const distanceToEdge = roundedRectSDF(ix, iy, 0.25, 0.25, 0.552);
         const displacement = smoothStep(0.8, 0, distanceToEdge - 0.15);
-
-        // 为了实现凹透镜效果，我们希望在中心（displacement接近0）时，scaled 值最大（大于1），
-        // 在边缘（displacement接近1）时，scaled 值接近1或更小。
-        // 调整 distortionFactor 可以控制凹陷的强度。
-        const distortionFactor = 0.5; // 控制凹透镜的强度，可以调整此值 (例如 0.2 到 1.0)
+        const distortionFactor = 0.5;
         const scaled = 1.0 + distortionFactor * (1.0 - displacement);
 
         return texture(ix * scaled + 0.5, iy * scaled + 0.5);
     }
+
     update() {
         if (!this.context) return;
 
-        const w = this.width * this.canvasDPI; // 使用 DPI 缩放的宽度
-        const h = this.height * this.canvasDPI; // 使用 DPI 缩放的高度
+        const w = this.width * this.canvasDPI;
+        const h = this.height * this.canvasDPI;
 
-        // 如果尺寸为零，则跳过更新
         if (w === 0 || h === 0) {
             this.animationFrame = null;
             return;
@@ -186,7 +151,6 @@ export class InteractiveGlass {
             }
         }
 
-        // liquid-glass.js 对 maxScale 的处理
         maxScale *= 0.5;
 
         let dataIndex = 0;
@@ -204,18 +168,50 @@ export class InteractiveGlass {
 
         this.context.putImageData(new ImageData(data, w, h), 0, 0);
         this.feImage.setAttributeNS('http://www.w3.org/1999/xlink', 'href', this.canvas.toDataURL());
-        // 确保 scale 也考虑了 canvasDPI
         this.feDisplacementMap.setAttribute('scale', (maxScale / this.canvasDPI).toString());
 
         this.animationFrame = null;
     }
 
-    destroy() {
-        // Removed mouse event listener cleanup
-        // this.element.removeEventListener('mousemove', this.onMouseMove);
-        // this.element.removeEventListener('mouseleave', this.onMouseLeave);
+    /**
+     * Efficiently resizes the glass effect.
+     * Designed to be called rapidly within an animation loop.
+     */
+    resize() {
+        if (!this.element || !document.body.contains(this.element)) return;
 
-        // Only remove the styles this script added.
+        const rect = this.element.getBoundingClientRect();
+        const newWidth = Math.round(rect.width);
+        const newHeight = Math.round(rect.height);
+
+        // Only proceed if dimensions have actually changed to avoid unnecessary work
+        if (newWidth === this.width && newHeight === this.height) {
+            return;
+        }
+
+        this.width = newWidth;
+        this.height = newHeight;
+
+        if (this.width === 0 || this.height === 0) {
+            return; // Skip if element is not visible
+        }
+
+        // Update SVG filter and feImage dimensions
+        const filter = this.svg.querySelector('filter');
+        filter.setAttribute('width', this.width.toString());
+        filter.setAttribute('height', this.height.toString());
+        this.feImage.setAttribute('width', this.width.toString());
+        this.feImage.setAttribute('height', this.height.toString());
+
+        // Update canvas dimensions
+        this.canvas.width = this.width * this.canvasDPI;
+        this.canvas.height = this.height * this.canvasDPI;
+
+        // Recalculate and apply the displacement map
+        this.update();
+    }
+
+    destroy() {
         this.element.style.backdropFilter = '';
         this.element.style.webkitBackdropFilter = '';
         if (this.svg) {

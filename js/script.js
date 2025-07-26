@@ -1,5 +1,5 @@
 import { loadAndProcessConfig } from './config.js';
-import { populateGroupSelector, updateUI, showLoadingAnimation } from './ui.js';
+import { populateGroupSelector, updateUI, showLoadingAnimation, getGlassInstance } from './ui.js';
 import { testAllServers } from './api.js';
 import { detectAndApplyTheme, copyAddress, loadBackgroundImage } from './utils.js';
 import { getState, setState, initState } from './state.js';
@@ -15,14 +15,10 @@ async function main() {
     }
 }
 
-// --- Global Event Listeners ---
+
 document.addEventListener('click', function (event) {
     const target = event.target;
     const { isTransitioning } = getState();
-
-    // *** THE FIX ***
-    // The conflicting logic for handling dropdown item clicks has been completely removed.
-    // The DropdownMenu component now handles this safely on its own.
 
     const copyButton = target.closest('.copy-btn');
     if (copyButton) {
@@ -45,7 +41,26 @@ document.addEventListener('click', function (event) {
     const nodeHeader = target.closest('.node-header');
     if (nodeHeader) {
         const drawer = nodeHeader.closest('.node-drawer');
+        const serverGroup = drawer.closest('.server-group.interactive-glass');
         drawer.classList.toggle('is-open');
+        if (serverGroup) {
+            const glassInstance = getGlassInstance(serverGroup);
+            if (glassInstance) {
+                const animationDuration = 500;
+                let startTime = null;
+                const animateGlass = (timestamp) => {
+                    if (!startTime) startTime = timestamp;
+                    const elapsedTime = timestamp - startTime;
+                    glassInstance.resize();
+                    if (elapsedTime < animationDuration) {
+                        requestAnimationFrame(animateGlass);
+                    }
+                };
+                requestAnimationFrame(animateGlass);
+            }
+        }
+
+
         const drawerId = drawer.id;
         const { results } = getState();
         for (const group of results) {
@@ -66,4 +81,5 @@ window.addEventListener('load', () => {
     loadBackgroundImage();
     main();
 });
+
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", detectAndApplyTheme);
