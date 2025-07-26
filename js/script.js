@@ -15,7 +15,7 @@ async function main() {
     }
 }
 
-
+// --- Global Event Listeners ---
 document.addEventListener('click', function (event) {
     const target = event.target;
     const { isTransitioning } = getState();
@@ -42,24 +42,39 @@ document.addEventListener('click', function (event) {
     if (nodeHeader) {
         const drawer = nodeHeader.closest('.node-drawer');
         const serverGroup = drawer.closest('.server-group.interactive-glass');
+
         drawer.classList.toggle('is-open');
+
         if (serverGroup) {
             const glassInstance = getGlassInstance(serverGroup);
             if (glassInstance) {
                 const animationDuration = 500;
                 let startTime = null;
+
+                // **PERFORMANCE OPTIMIZATION**
+                // Cancel any previously running animation on this element to prevent overlap.
+                if (serverGroup.animationFrameId) {
+                    cancelAnimationFrame(serverGroup.animationFrameId);
+                }
+
                 const animateGlass = (timestamp) => {
                     if (!startTime) startTime = timestamp;
                     const elapsedTime = timestamp - startTime;
+
                     glassInstance.resize();
+
                     if (elapsedTime < animationDuration) {
-                        requestAnimationFrame(animateGlass);
+                        // Store the new animation frame ID on the element
+                        serverGroup.animationFrameId = requestAnimationFrame(animateGlass);
+                    } else {
+                        // Clean up the ID when the animation is finished
+                        serverGroup.animationFrameId = null;
                     }
                 };
-                requestAnimationFrame(animateGlass);
+
+                serverGroup.animationFrameId = requestAnimationFrame(animateGlass);
             }
         }
-
 
         const drawerId = drawer.id;
         const { results } = getState();

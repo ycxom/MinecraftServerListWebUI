@@ -2,6 +2,7 @@ import { getState, setState, initState } from './state.js';
 import { updateUI, startCountdown } from './ui.js';
 
 const apiEndpoints = [
+    // ... (API端点定义保持不变)
     {
         name: 'mcsrvstat.us',
         async fetcher(address) {
@@ -49,17 +50,23 @@ const apiEndpoints = [
     }
 ];
 
-async function fetchServerStatusWithRetry(address) {
-    for (const api of apiEndpoints) {
-        try {
-            const status = await api.fetcher(address);
-            return status.online ? { online: true, players: status.players, version: status.version } : { online: false, players: 'N/A', version: 'N/A' };
-        } catch (error) {
-            console.warn(`API ${api.name} for ${address} failed. Retrying...`, error);
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
+/**
+ * **PERFORMANCE OPTIMIZATION**
+ * Fetches server status by racing all available API endpoints in parallel
+ * and returning the result from the first one that responds successfully.
+ * This significantly reduces the wait time compared to a sequential retry mechanism.
+ * @param {string} address The server address.
+ * @returns {Promise<object>} A promise that resolves with the server status.
+ */
+async function fetchServerStatusFaster(address) {
+    try {
+        const result = await Promise.any(apiEndpoints.map(api => api.fetcher(address)));
+        return result.online ? result : { online: false, players: 'N/A', version: 'N/A' };
+    } catch (error) {
+        // Promise.any throws an AggregateError if all promises reject.
+        console.warn(`All APIs failed for ${address}.`, error);
+        return { online: false, players: '全部API错误', version: '全部API错误' };
     }
-    return { online: false, players: '全部API错误', version: '全部API错误' };
 }
 
 async function probeNodeLatency(address) {
@@ -82,6 +89,7 @@ export async function testAllServers(isInitialLoad = false) {
     progressBar.style.transform = 'scaleX(0)';
     progressBar.classList.add('progress-pulse');
 
+    // On non-initial loads, we now use the highly efficient refresh flow
     if (!isInitialLoad) {
         await updateUI({ isRefresh: true, skipAnimations: true });
     }
@@ -90,10 +98,12 @@ export async function testAllServers(isInitialLoad = false) {
 
     let { results } = getState();
 
+    // Fetch group statuses (online/offline) in parallel
     const groupPromises = results.map(async (group) => {
         const representativeNode = group.nodes[0]?.versions[0];
         if (representativeNode) {
-            const status = await fetchServerStatusWithRetry(representativeNode.fullAddress);
+            // Use the new, faster fetching strategy
+            const status = await fetchServerStatusFaster(representativeNode.fullAddress);
             group.status = status.online ? 'online' : 'offline';
             group.players = status.online ? status.players : '?/?';
             group.version = status.online ? status.version : '未知';
@@ -107,20 +117,21 @@ export async function testAllServers(isInitialLoad = false) {
     let completedCount = 0;
     let animationFrameId = null;
 
-    // --- PERFORMANCE OPTIMIZATION ---
-    // Use requestAnimationFrame to batch DOM updates for the progress bar.
-    // This prevents layout thrashing by ensuring we only update the DOM once per frame.
+    // **PERFORMANCE OPTIMIZATION**
+    // This function updates the progress bar. By checking if an animation frame is
+    // already pending, we prevent queuing up hundreds of redundant render calls.
     const updateProgressBar = () => {
         const percentage = (completedCount / allVersions.length);
         progressBar.style.transform = `scaleX(${percentage})`;
-        animationFrameId = null; // Reset ID after execution
+        animationFrameId = null; // Reset the ID after the frame has been rendered
     };
 
+    // Fetch individual latencies in parallel
     const latencyPromises = allVersions.map(async (version) => {
         version.latency = await probeNodeLatency(version.fullAddress);
         version.timestamp = new Date().toLocaleTimeString();
         completedCount++;
-        // Request an animation frame, but don't schedule a new one if one is already pending.
+        // Only request a new animation frame if one is not already pending
         if (!animationFrameId) {
             animationFrameId = requestAnimationFrame(updateProgressBar);
         }
@@ -128,12 +139,11 @@ export async function testAllServers(isInitialLoad = false) {
 
     await Promise.all(latencyPromises);
 
-    // Ensure the final state of the progress bar is rendered
+    // Ensure the final state of the progress bar is rendered correctly
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
     }
-    updateProgressBar();
-
+    updateProgressBar(); // Render the 100% state
 
     results.forEach(group => {
         group.nodes.forEach(node => {

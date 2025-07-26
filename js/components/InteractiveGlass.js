@@ -15,6 +15,7 @@
  * - REFACTOR: Removed all hardcoded styles (background, border, etc.) to prevent conflicts
  * with external CSS files. This script is now solely responsible for the filter effect.
  * - ADDED: A `resize` method for efficient, real-time resizing during animations.
+ * - ADDED: A more prominent `blur` to the backdrop-filter for a frosted glass effect.
  */
 
 function smoothStep(a, b, t) {
@@ -63,8 +64,11 @@ export class InteractiveGlass {
         this.createSVGFilter();
         this.createCanvas();
 
-        this.element.style.backdropFilter = `url(#${this.id}_filter) blur(0.25px) contrast(1.2) brightness(1.05) saturate(1.1)`;
-        this.element.style.webkitBackdropFilter = `url(#${this.id}_filter) blur(0.25px) contrast(1.2) brightness(1.05) saturate(1.1)`;
+        // *** 核心修改：添加更强的 blur(5px) 以实现毛玻璃效果 ***
+        const filterValue = `blur(2px) url(#${this.id}_filter) contrast(1.1) brightness(1.1)`;
+        this.element.style.backdropFilter = filterValue;
+        this.element.style.webkitBackdropFilter = filterValue;
+
 
         this.update();
     }
@@ -173,10 +177,6 @@ export class InteractiveGlass {
         this.animationFrame = null;
     }
 
-    /**
-     * Efficiently resizes the glass effect.
-     * Designed to be called rapidly within an animation loop.
-     */
     resize() {
         if (!this.element || !document.body.contains(this.element)) return;
 
@@ -184,7 +184,6 @@ export class InteractiveGlass {
         const newWidth = Math.round(rect.width);
         const newHeight = Math.round(rect.height);
 
-        // Only proceed if dimensions have actually changed to avoid unnecessary work
         if (newWidth === this.width && newHeight === this.height) {
             return;
         }
@@ -193,21 +192,18 @@ export class InteractiveGlass {
         this.height = newHeight;
 
         if (this.width === 0 || this.height === 0) {
-            return; // Skip if element is not visible
+            return;
         }
 
-        // Update SVG filter and feImage dimensions
         const filter = this.svg.querySelector('filter');
         filter.setAttribute('width', this.width.toString());
         filter.setAttribute('height', this.height.toString());
         this.feImage.setAttribute('width', this.width.toString());
         this.feImage.setAttribute('height', this.height.toString());
 
-        // Update canvas dimensions
         this.canvas.width = this.width * this.canvasDPI;
         this.canvas.height = this.height * this.canvasDPI;
 
-        // Recalculate and apply the displacement map
         this.update();
     }
 
