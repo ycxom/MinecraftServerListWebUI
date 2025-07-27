@@ -3,3 +3,9 @@
 @import url('components.css');
 @import url('animations.css');
 @import url('copy-animation.css');
+
+::-webkit-scrollbar {
+    display: none; /* 直接不显示滚动条 */
+    width: 0;  /* 宽度设为0 */
+    height: 0; /* 高度设为0 */
+}

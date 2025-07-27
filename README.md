@@ -2,6 +2,14 @@
 
 ## 部署说明
 
-fork该项目，复制`config.example.json`并修改为`config.js`文件，将`MCServerList`数组中的内容替换成自己的服务器列表。
+- fork该项目，复制`config.example.json`并修改为`config.js`文件，将`MCServerList`数组中的内容替换成自己的服务器列表。
 
-感谢项目 https://github.com/shuding/liquid-glass 液态玻璃
+- 该项目可部署在[vercel](https://vercel.com/)上!
+
+- 运行API 服务器
+
+```bash
+node .\api\index.js
+```
+
+感谢项目 <https://github.com/shuding/liquid-glass> 液态玻璃

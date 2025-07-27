@@ -1,25 +1,23 @@
 import { loadAndProcessConfig } from './config.js';
-import { populateGroupSelector, updateUI, showLoadingAnimation, getGlassInstance } from './ui.js';
+import { showLoadingAnimation, getGlassInstance } from './ui.js';
 import { testAllServers } from './api.js';
 import { detectAndApplyTheme, copyAddress, loadBackgroundImage } from './utils.js';
-import { getState, setState, initState } from './state.js';
+import { getState, setState } from './state.js';
 
 async function main() {
     showLoadingAnimation();
     const serverData = await loadAndProcessConfig();
     if (serverData.length > 0) {
         setState({ serverData });
-        initState();
-        populateGroupSelector();
-        await testAllServers(true);
+        await testAllServers(true); // 首次加载也走完整流程
     }
 }
 
-// --- Global Event Listeners ---
-document.addEventListener('click', function (event) {
+document.addEventListener('click', async function (event) {
     const target = event.target;
     const { isTransitioning } = getState();
 
+    // 复制按钮的逻辑
     const copyButton = target.closest('.copy-btn');
     if (copyButton) {
         event.stopPropagation();
@@ -30,14 +28,30 @@ document.addEventListener('click', function (event) {
 
     const refreshButton = target.closest('#refresh-btn');
     if (refreshButton) {
-        if (isTransitioning || refreshButton.classList.contains('spinning')) return;
-        refreshButton.classList.add('spinning');
-        testAllServers(false).finally(() => {
-            setTimeout(() => refreshButton.classList.remove('spinning'), 500);
-        });
+        // 如果正在切换或已在旋转，则直接返回
+        if (isTransitioning || refreshButton.classList.contains('spinning')) {
+            return;
+        }
+
+        // 使用 try...finally 结构确保 spinning class 总是被移除
+        try {
+            refreshButton.classList.add('spinning');
+            // 调用 testAllServers，并等待它完成
+            await testAllServers(false);
+        } catch (error) {
+            // 捕获 testAllServers 中可能发生的任何意外错误
+            console.error("在执行 testAllServers 期间发生严重错误:", error);
+        } finally {
+            // 无论成功或失败，最后都移除旋转动画
+            // 使用一个短暂的延时，以确保视觉效果完整
+            setTimeout(() => {
+                refreshButton.classList.remove('spinning');
+            }, 500);
+        }
         return;
     }
 
+    // 折叠列表的逻辑
     const nodeHeader = target.closest('.node-header');
     if (nodeHeader) {
         const drawer = nodeHeader.closest('.node-drawer');
@@ -50,28 +64,19 @@ document.addEventListener('click', function (event) {
             if (glassInstance) {
                 const animationDuration = 500;
                 let startTime = null;
-
-                // **PERFORMANCE OPTIMIZATION**
-                // Cancel any previously running animation on this element to prevent overlap.
                 if (serverGroup.animationFrameId) {
                     cancelAnimationFrame(serverGroup.animationFrameId);
                 }
-
                 const animateGlass = (timestamp) => {
                     if (!startTime) startTime = timestamp;
                     const elapsedTime = timestamp - startTime;
-
                     glassInstance.resize();
-
                     if (elapsedTime < animationDuration) {
-                        // Store the new animation frame ID on the element
                         serverGroup.animationFrameId = requestAnimationFrame(animateGlass);
                     } else {
-                        // Clean up the ID when the animation is finished
                         serverGroup.animationFrameId = null;
                     }
                 };
-
                 serverGroup.animationFrameId = requestAnimationFrame(animateGlass);
             }
         }
